@@ -9,8 +9,10 @@
 
 <body>
     <h1>Score: <span id="score">0</span></h1>
-    <canvas id="canvas" width="300" height="300"></canvas>
+    <canvas id="snake" width="500" height="500"></canvas>
+    <h2 id="start">WASD or arrow keys to start!</h2>
     <h1 id="over">GAME OVER!</h1>
+    <button id="again" type="button" onclick="location.reload()">Play again</button>
 </body>
 
 <style>
@@ -31,20 +33,34 @@
         display: none;
     }
 
+    #start {
+        text-align: center;
+        color: blueviolet;
+    }
+
+    #again {
+        display: none;
+        width: 50%;
+        margin-left: 25%;
+        margin-right: 25%;
+    }
+
     #canvas {
         border: 1px solid black;
     }
 </style>
 
 <script>
+    // TODO: fix button queueing bug -> need a delay?
+    const CANVAS_ID = 'snake'
     const GAME_SPEED = 250
-    const SNAKE_SIZE = 15
+    const SNAKE_SIZE = 25
     const CANVAS_COLOR = "#000000"
     const FOOD_COLOR = "#FF0000"
     const SNAKE_COLOR = "#00FF00"
     const SNAKE_BORDER_COLOR = "#007a1d"
     const SNAKE_BORDER_SIZE = 3
-    var canvas = document.getElementById('canvas')
+    var canvas = document.getElementById(CANVAS_ID)
     var ctx = canvas.getContext('2d')
 
     var score = 0
@@ -99,6 +115,8 @@
     }
 
     function drawFood() {
+        if (!food_x && !food_y)
+            [food_x, food_y] = randomCoordinate()
         ctx.fillStyle = FOOD_COLOR;
         ctx.fillRect(food_x, food_y, SNAKE_SIZE, SNAKE_SIZE);
     }
@@ -111,21 +129,28 @@
         snake.slice(1).forEach(function (segment) {
             if (snake[0].x === segment.x && snake[0].y === segment.y) {
                 document.getElementById('over').style.display = 'block'
+                document.getElementById('again').style.display = 'block'
                 clearInterval(gameLoop)
             }
         })
     }
 
     function gameTick() {
+        if (dx || dy) {
+            // clear instructions
+            document.getElementById('start').style.display = 'none'
+        }
+        clearCanvas()
+        updateSnake()
+        checkGameEnd()
+        drawFood()
+        drawSnake()
+    }
+
+    function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = CANVAS_COLOR;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        updateSnake()
-        checkGameEnd()
-        if (!food_x && !food_y)
-            [food_x, food_y] = randomCoordinate()
-        drawFood()
-        drawSnake()
     }
 
     function randomCoordinate() {
@@ -136,6 +161,7 @@
 
     document.addEventListener('keydown', function (event) {
         switch (event.keyCode) {
+            case 65:
             case 37:
                 // LEFT
                 if (dx === 0) {
@@ -143,6 +169,7 @@
                     dy = 0
                 }
                 break;
+            case 87:
             case 38:
                 // UP
                 if (dy === 0) {
@@ -150,6 +177,7 @@
                     dy = -SNAKE_SIZE
                 }
                 break;
+            case 68:
             case 39:
                 // RIGHT
                 if (dx === 0) {
@@ -157,6 +185,7 @@
                     dy = 0
                 }
                 break;
+            case 83:
             case 40:
                 // DOWN
                 if (dy === 0) {
