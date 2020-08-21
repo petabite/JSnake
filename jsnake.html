@@ -1,0 +1,172 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>JSnake</title>
+</head>
+
+<body>
+    <h1>Score: <span id="score">0</span></h1>
+    <canvas id="canvas" width="300" height="300"></canvas>
+    <h1 id="over">GAME OVER!</h1>
+</body>
+
+<style>
+    body {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    h1 {
+        margin: 0;
+    }
+
+    #over {
+        text-align: center;
+        color: red;
+        display: none;
+    }
+
+    #canvas {
+        border: 1px solid black;
+    }
+</style>
+
+<script>
+    const GAME_SPEED = 250
+    const SNAKE_SIZE = 15
+    const CANVAS_COLOR = "#000000"
+    const FOOD_COLOR = "#FF0000"
+    const SNAKE_COLOR = "#00FF00"
+    const SNAKE_BORDER_COLOR = "#007a1d"
+    const SNAKE_BORDER_SIZE = 3
+    var canvas = document.getElementById('canvas')
+    var ctx = canvas.getContext('2d')
+
+    var score = 0
+    var dx = 0
+    var dy = 0
+    var food_x, food_y
+    var snake = [{
+        x: canvas.width / 2,
+        y: canvas.height / 2
+    }]
+
+    function drawSnake() {
+        snake.forEach(drawSnakeSegment)
+    }
+
+    function drawSnakeSegment(segment) {
+        ctx.fillStyle = SNAKE_COLOR;
+        ctx.fillRect(segment.x, segment.y, SNAKE_SIZE, SNAKE_SIZE);
+        ctx.strokeStyle = SNAKE_BORDER_COLOR
+        ctx.lineWidth = SNAKE_BORDER_SIZE
+        ctx.strokeRect(segment.x, segment.y, SNAKE_SIZE, SNAKE_SIZE);
+    }
+
+    function updateSnake() {
+        var x, y
+        if (snake[0].x + dx >= canvas.width) {
+            x = 0
+        } else if (snake[0].x + dx <= -SNAKE_SIZE) {
+            x = canvas.width - SNAKE_SIZE
+        } else {
+            x = snake[0].x + dx
+        }
+        if (snake[0].y + dy >= canvas.height) {
+            y = 0
+        } else if (snake[0].y + dy <= -SNAKE_SIZE) {
+            y = canvas.height - SNAKE_SIZE
+        } else {
+            y = snake[0].y + dy
+        }
+        head = {
+            x: x,
+            y: y
+        }
+        snake.unshift(head)
+        if (head.x === food_x && head.y === food_y) {
+            [food_x, food_y] = randomCoordinate()
+            score++
+            drawScore()
+        } else {
+            snake.pop()
+        }
+    }
+
+    function drawFood() {
+        ctx.fillStyle = FOOD_COLOR;
+        ctx.fillRect(food_x, food_y, SNAKE_SIZE, SNAKE_SIZE);
+    }
+
+    function drawScore() {
+        document.getElementById('score').innerHTML = score
+    }
+
+    function checkGameEnd() {
+        snake.slice(1).forEach(function (segment) {
+            if (snake[0].x === segment.x && snake[0].y === segment.y) {
+                document.getElementById('over').style.display = 'block'
+                clearInterval(gameLoop)
+            }
+        })
+    }
+
+    function gameTick() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = CANVAS_COLOR;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        updateSnake()
+        checkGameEnd()
+        if (!food_x && !food_y)
+            [food_x, food_y] = randomCoordinate()
+        drawFood()
+        drawSnake()
+    }
+
+    function randomCoordinate() {
+        return [Math.floor(Math.random() * canvas.width / SNAKE_SIZE) * SNAKE_SIZE,
+            Math.floor(Math.random() * canvas.height / SNAKE_SIZE) * SNAKE_SIZE
+        ]
+    }
+
+    document.addEventListener('keydown', function (event) {
+        switch (event.keyCode) {
+            case 37:
+                // LEFT
+                if (dx === 0) {
+                    dx = -SNAKE_SIZE
+                    dy = 0
+                }
+                break;
+            case 38:
+                // UP
+                if (dy === 0) {
+                    dx = 0
+                    dy = -SNAKE_SIZE
+                }
+                break;
+            case 39:
+                // RIGHT
+                if (dx === 0) {
+                    dx = SNAKE_SIZE
+                    dy = 0
+                }
+                break;
+            case 40:
+                // DOWN
+                if (dy === 0) {
+                    dx = 0
+                    dy = SNAKE_SIZE
+                }
+                break;
+        }
+    });
+    const gameLoop = setInterval(gameTick, GAME_SPEED)
+</script>
+
+</html>
