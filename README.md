@@ -4,6 +4,8 @@ super plain vanilla javascript snake
 
 ![demo](https://raw.githubusercontent.com/petabite/JSnake/master/jsnake.png)
 
+# ▶️▶️[PLAY HERE](https://petabite.github.io/JSnake/jsnake.html)◀️◀️
+
 ## How to Play
 
 1. clone repo
